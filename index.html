@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AI英语">
+<meta name="theme-color" content="#080c18">
+<title>AI 英语精读</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080c18;--bg2:#0d1220;--surface:#111827;--surface2:#1a2235;
+  --card:#1e2a3d;--accent:#38bdf8;--accent-dim:rgba(56,189,248,0.12);
+  --amber:#fbbf24;--amber-dim:rgba(251,191,36,0.12);
+  --green:#34d399;--green-dim:rgba(52,211,153,0.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,0.12);
+  --text:#f0f4ff;--text2:#8b9ab8;--text3:#455069;
+  --border:rgba(255,255,255,0.06);--radius:18px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:16px;line-height:1.6}
+#app{height:100%;position:relative;overflow:hidden}
+.screen{display:none;position:absolute;inset:0;flex-direction:column;overflow:hidden;background:var(--bg);animation:fadeUp .2s ease}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.topbar{display:flex;align-items:center;padding:calc(var(--safe-top)+14px) 18px 14px;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2)}
+.topbar-title{font-size:17px;font-weight:600;flex:1;letter-spacing:-.3px}
+.topbar-right{font-size:12px;color:var(--text2)}
+.btn-icon{width:38px;height:38px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex-shrink:0}
+.btn-icon:active{opacity:.6}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 18px}
+.content::-webkit-scrollbar{display:none}
+.bottombar{display:flex;gap:10px;padding:12px 18px calc(var(--safe-bottom)+12px);background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0}
+.btn{padding:14px 18px;border-radius:14px;border:none;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;transition:transform .15s,opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.2px}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--accent);color:#080c18;font-weight:700;flex:1}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);flex:1}
+.btn-success{background:var(--green-dim);color:var(--green);border:1px solid rgba(52,211,153,.2);flex:1}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(248,113,113,.2);flex:1}
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px}
+
+/* HOME */
+.home-header{padding:22px 18px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.home-logo{font-size:12px;font-weight:600;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.home-title{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.home-sub{font-size:14px;color:var(--text2);margin-top:3px}
+.home-pills{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;background:var(--surface);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s}
+.pill:active{opacity:.6}
+.passage-card{cursor:pointer;transition:transform .12s,opacity .12s;position:relative;overflow:hidden}
+.passage-card:active{transform:scale(.98);opacity:.9}
+.pc-title{font-size:16px;font-weight:600;margin-bottom:5px;color:var(--text)}
+.pc-preview{font-size:13px;color:var(--text2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5}
+.pc-meta{margin-top:11px;display:flex;gap:6px;flex-wrap:wrap}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-blue{background:var(--accent-dim);color:var(--accent)}
+.badge-amber{background:var(--amber-dim);color:var(--amber)}
+.badge-green{background:var(--green-dim);color:var(--green)}
+.fab{position:fixed;bottom:calc(var(--safe-bottom)+20px);right:18px;width:54px;height:54px;border-radius:18px;background:var(--accent);color:#080c18;border:none;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(56,189,248,.4);z-index:10;transition:transform .15s}
+.fab:active{transform:scale(.9)}
+.empty{text-align:center;padding:60px 20px}
+.empty-icon{font-size:44px;margin-bottom:14px;opacity:.35}
+.empty-title{font-size:17px;font-weight:600;margin-bottom:7px;color:var(--text2)}
+.empty-hint{font-size:13px;color:var(--text3);line-height:1.6}
+
+/* IMPORT */
+.form-group{margin-bottom:18px}
+.form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:block}
+.form-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:13px 14px;color:var(--text);font-family:inherit;font-size:15px;outline:none;resize:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text3)}
+textarea.form-input{min-height:200px;line-height:1.6}
+.loading-box{text-align:center;padding:28px 20px}
+.spinner{width:30px;height:30px;border:2.5px solid var(--surface2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text2)}
+
+/* READ */
+.read-text{font-size:17px;line-height:1.9;color:var(--text);font-weight:300}
+
+/* STUDY */
+.study-text{font-size:17px;line-height:2.1;color:var(--text);font-weight:300}
+.vocab-word{background:var(--accent-dim);color:var(--accent);border-radius:5px;padding:1px 4px;cursor:pointer;border-bottom:1.5px solid rgba(56,189,248,.45);transition:background .1s}
+.vocab-word:active{background:rgba(56,189,248,.24)}
+.study-hint{margin-top:16px;padding:12px 14px;background:var(--surface);border-radius:12px;border:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.6}
+
+/* WORD SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(4px)}
+.overlay.show{display:flex}
+.sheet{background:var(--bg2);border-radius:24px 24px 0 0;border:1px solid var(--border);border-bottom:none;padding:6px 22px calc(var(--safe-bottom)+28px);width:100%;animation:sheetUp .26s cubic-bezier(.25,.8,.25,1);position:relative}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 16px}
+.sheet-close{position:absolute;top:14px;right:18px;font-size:22px;color:var(--text3);cursor:pointer;padding:4px}
+.tip-word{font-size:28px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-.5px}
+.tip-ipa{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--amber);margin-bottom:14px;font-weight:500}
+.tip-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}
+.tip-lang{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding-top:3px;min-width:22px;flex-shrink:0}
+.tip-def{font-size:15px;color:var(--text2);line-height:1.55;flex:1}
+.tip-def.zh{font-size:19px;font-weight:600;color:var(--text)}
+
+/* LISTEN */
+.listen-text-box{font-size:14px;line-height:1.8;color:var(--text2);font-weight:300;margin-bottom:18px}
+.player-card{padding:22px 20px;text-align:center}
+.play-btn{width:82px;height:82px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;cursor:pointer;border:none;color:#080c18;font-size:32px;transition:transform .15s}
+.play-btn:active{transform:scale(.91)}
+.play-btn.playing{animation:ringPulse 2s ease-in-out infinite}
+@keyframes ringPulse{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,.3)}50%{box-shadow:0 0 0 14px rgba(56,189,248,0)}}
+.play-status{font-size:13px;color:var(--text2);margin-bottom:14px}
+.speed-row{display:flex;gap:6px;justify-content:center}
+.speed-btn{padding:6px 14px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.speed-btn.on{background:var(--accent-dim);color:var(--accent);border-color:rgba(56,189,248,.3)}
+.record-card{padding:20px;text-align:center}
+.rec-label{font-size:13px;color:var(--text2);margin-bottom:14px}
+.rec-btn{width:64px;height:64px;border-radius:50%;background:var(--red-dim);border:2px solid var(--red);color:var(--red);font-size:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;transition:transform .15s;font-family:inherit}
+.rec-btn:active{transform:scale(.91)}
+.rec-btn.on{background:var(--red);color:#fff;border-color:var(--red);animation:recPulse 1.1s ease-in-out infinite}
+@keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.4)}50%{box-shadow:0 0 0 10px rgba(248,113,113,0)}}
+.rec-status{font-size:13px;color:var(--text2);margin-bottom:10px}
+.pb-btn{display:none;padding:8px 20px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit}
+
+/* FLASHCARD */
+.fc-prog{height:2px;background:var(--surface2);flex-shrink:0}
+.fc-prog-fill{height:100%;background:var(--accent);transition:width .4s cubic-bezier(.4,0,.2,1)}
+.fc-counter{text-align:center;font-size:12px;color:var(--text3);padding:10px 0;flex-shrink:0;font-family:'JetBrains Mono',monospace}
+.fc-arena{flex:1;display:flex;align-items:center;justify-content:center;padding:0 20px;perspective:1200px;min-height:0}
+.fc-card{width:100%;max-width:340px;height:250px;position:relative;cursor:pointer;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.fc-card.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;background:var(--card);border:1px solid var(--border);border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.fc-back{transform:rotateY(180deg)}
+.fc-front-word{font-size:36px;font-weight:700;letter-spacing:-1px;margin-bottom:10px;text-align:center}
+.fc-front-hint{font-size:12px;color:var(--text3)}
+.fc-back-word{font-size:21px;font-weight:700;margin-bottom:5px;text-align:center}
+.fc-back-ipa{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--amber);margin-bottom:12px}
+.fc-back-en{font-size:13px;color:var(--text2);text-align:center;line-height:1.5;margin-bottom:10px}
+.fc-back-zh{font-size:20px;font-weight:600;text-align:center;color:var(--text)}
+.fc-btns{display:flex;gap:10px;padding:12px 18px calc(var(--safe-bottom)+12px);flex-shrink:0}
+.fc-sum-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
+.fc-sum-inner{padding:40px 24px;text-align:center}
+.fc-sum-emoji{font-size:54px;margin-bottom:16px}
+.fc-sum-title{font-size:23px;font-weight:700;margin-bottom:6px;letter-spacing:-.5px}
+.fc-sum-sub{font-size:14px;color:var(--text2);margin-bottom:26px;line-height:1.6}
+.fc-sum-stats{display:flex;gap:10px;justify-content:center;margin-bottom:26px}
+.sum-stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 20px;min-width:100px}
+.sum-num{font-size:30px;font-weight:700;margin-bottom:2px}
+.sum-lbl{font-size:12px;color:var(--text2)}
+.sum-stat.s .sum-num{color:var(--green)}
+.sum-stat.d .sum-num{color:var(--red)}
+
+/* NOTEBOOK */
+.nb-search{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:13px;padding:10px 14px;margin-bottom:16px}
+.nb-search input{flex:1;background:none;border:none;color:var(--text);font-family:inherit;font-size:14px;outline:none}
+.nb-search input::placeholder{color:var(--text3)}
+.nb-del{width:34px;height:34px;flex-shrink:0;border-radius:10px;background:var(--red-dim);border:none;color:var(--red);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* SETTINGS */
+.settings-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{flex:1}
+.settings-title{font-size:15px;font-weight:500;margin-bottom:2px}
+.settings-sub{font-size:12px;color:var(--text3)}
+.settings-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══ HOME ═══ -->
+<div id="s-home" class="screen active">
+  <div class="home-header">
+    <div class="home-logo">AI English</div>
+    <div class="home-title">英语精读训练</div>
+    <div class="home-sub">导入 · 学习 · 朗读 · Flashcard</div>
+    <div class="home-pills" id="home-pills"></div>
+  </div>
+  <div class="content" id="home-list" style="padding-bottom:88px"></div>
+  <button class="fab" onclick="go('import')">＋</button>
+</div>
+
+<!-- ═══ IMPORT ═══ -->
+<div id="s-import" class="screen">
+  <div class="topbar">
+    <button class="btn-icon" onclick="go('home')">←</button>
+    <div class="topbar-title">导入段落</div>
+  </div>
+  <div class="content">
+    <div class="form-group">
+      <label class="form-label">段落标题（可选）</label>
+      <input type="text" id="imp-title" class="form-input" placeholder="例：GPT-4 technical overview">
+    </div>
+    <div class="form-group">
+      <label class="form-label">粘贴英文内容</label>
+      <textarea id="imp-text" class="form-input" placeholder="从推特、文章、课程材料粘贴内容……&#10;&#10;段落不需要太长，100–300词效果最佳。"></textarea>
+    </div>
+    <div id="imp-loading" class="loading-box" style="display:none">
+      <div class="spinner"></div>
+      <div class="loading-text">Gemini 正在分析词汇，稍等……</div>
+    </div>
+  </div>
+  <div class="bottombar">
+    <button class="btn btn-primary" id="imp-btn" onclick="doImport()">🔍 分析词汇</button>
+  </div>
+</div>
+
+<!-- ═══ READ ═══ -->
+<div id="s-read" class="screen">
+  <div class="topbar">
+    <button class="btn-icon" onclick="go('home')">←</button>
+    <div class="topbar-title" id="read-title">原文</div>
+    <div class="topbar-right" id="read-meta"></div>
+  </div>
+  <div class="content">
+    <div id="read-text" class="read-text"></div>
+  </div>
+  <div class="bottombar">
+    <button class="btn btn-primary" onclick="goStudy()">✨ 开始学习</button>
+  </div>
+</div>
+
+<!-- ═══ STUDY ═══ -->
+<div id="s-study" class="screen">
+  <div class="topbar">
+    <button class="btn-icon" onclick="go('read')">←</button>
+    <div class="topbar-title">学习模式</div>
+  </div>
+  <div class="content">
+    <div id="study-text" class="study-text"></div>
+    <div class="study-hint" style="margin-top:20px">💡 蓝色词汇点击查看 <b style="color:var(--accent)">音标 + 释义</b></div>
+  </div>
+  <div class="bottombar">
+    <button class="btn btn-ghost" onclick="go('listen')">🔊 朗读</button>
+    <button class="btn btn-primary" onclick="startFC()">📖 Flashcard</button>
+  </div>
+</div>
+
+<!-- ═══ LISTEN ═══ -->
+<div id="s-listen" class="screen">
+  <div class="topbar">
+    <button class="btn-icon" onclick="go('study')">←</button>
+    <div class="topbar-title">朗读 &amp; 跟读</div>
+  </div>
+  <div class="content">
+    <div id="listen-text" class="listen-text-box"></div>
+    <div class="card player-card">
+      <button class="play-btn" id="play-btn" onclick="togglePlay()">▶</button>
+      <div class="play-status" id="play-status">点击播放</div>
+      <div class="speed-row">
+        <button class="speed-btn" onclick="setSpd(0.7,this)">0.7×</button>
+        <button class="speed-btn on" onclick="setSpd(1.0,this)">1.0×</button>
+        <button class="speed-btn" onclick="setSpd(1.2,this)">1.2×</button>
+        <button class="speed-btn" onclick="setSpd(1.5,this)">1.5×</button>
+      </div>
+    </div>
+    <div class="card record-card">
+      <div class="rec-label">🎙 跟读录音</div>
+      <button class="rec-btn" id="rec-btn" onclick="toggleRec()">🎙</button>
+      <div class="rec-status" id="rec-status">按下开始录音</div>
+      <button class="pb-btn" id="pb-btn" onclick="playRec()">▶ 播放录音</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FLASHCARD ═══ -->
+<div id="s-flashcard" class="screen">
+  <div class="topbar">
+    <button class="btn-icon" onclick="go('study')">←</button>
+    <div class="topbar-title">Flashcard</div>
+  </div>
+  <div class="fc-prog"><div class="fc-prog-fill" id="fc-fill" style="width:0%"></div></div>
+  <div class="fc-counter" id="fc-counter">—</div>
+  <div id="fc-main" style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0">
+    <div class="fc-arena">
+      <div class="fc-card" id="fc-card" onclick="flipCard()">
+        <div class="fc-face">
+          <div class="fc-front-word" id="fc-fw"></div>
+          <div class="fc-front-hint">点击翻转查看释义</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-back-word" id="fc-bw"></div>
+          <div class="fc-back-ipa" id="fc-ipa"></div>
+          <div class="fc-back-en" id="fc-en"></div>
+          <div class="fc-back-zh" id="fc-zh"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-btns">
+      <button class="btn btn-danger" id="fc-no" onclick="fcAns(false)" disabled>✕ 再背</button>
+      <button class="btn btn-success" id="fc-yes" onclick="fcAns(true)" disabled>✓ 记住了</button>
+    </div>
+  </div>
+  <div id="fc-sum-wrap" class="fc-sum-wrap">
+    <div class="fc-sum-inner">
+      <div class="fc-sum-emoji" id="fc-emoji">🎉</div>
+      <div class="fc-sum-title">本轮完成！</div>
+      <div class="fc-sum-sub" id="fc-sub"></div>
+      <div class="fc-sum-stats">
+        <div class="sum-stat s"><div class="sum-num" id="fc-nc">0</div><div class="sum-lbl">记住了</div></div>
+        <div class="sum-stat d"><div class="sum-num" id="fc-nw">0</div><div class="sum-lbl">加入生词本</div></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="go('study')">继续学习</button>
+      <button class="btn btn-ghost" style="width:100%" onclick="go('notebook')">查看生词本</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NOTEBOOK ═══ -->
+<div id="s-notebook" class="screen">
+  <div class="topbar">
+    <button class="btn-icon" onclick="go('home')">←</button>
+    <div class="topbar-title">生词本</div>
+    <div class="topbar-right" id="nb-count"></div>
+  </div>
+  <div class="content">
+    <div class="nb-search">
+      <span style="color:var(--text3);font-size:14px">🔍</span>
+      <input type="text" id="nb-q" placeholder="搜索单词…" oninput="renderNB()">
+    </div>
+    <div id="nb-list"></div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS ═══ -->
+<div id="s-settings" class="screen">
+  <div class="topbar">
+    <button class="btn-icon" onclick="go('home')">←</button>
+    <div class="topbar-title">设置</div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="settings-row">
+        <div class="settings-label">
+          <div class="settings-title">AI 引擎</div>
+          <div class="settings-sub">词汇分析由 Google Gemini 提供</div>
+        </div>
+        <div class="settings-val">Gemini 2.0 Flash</div>
+      </div>
+      <div class="settings-row" style="border:none;padding-bottom:0">
+        <div class="settings-label">
+          <div class="settings-title">数据存储</div>
+          <div class="settings-sub">段落和生词本存储在手机本地</div>
+        </div>
+        <div class="settings-val" id="data-count"></div>
+      </div>
+    </div>
+    <div style="height:16px"></div>
+    <button class="btn btn-danger" style="width:100%" onclick="clearAll()">🗑 清空所有段落和生词本</button>
+  </div>
+</div>
+
+<!-- ═══ WORD SHEET ═══ -->
+<div class="overlay" id="tip-overlay" onclick="closeTip(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <span class="sheet-close" onclick="closeTipDirect()">✕</span>
+    <div class="tip-word" id="tip-word"></div>
+    <div class="tip-ipa" id="tip-ipa"></div>
+    <div class="tip-row"><span class="tip-lang">EN</span><div class="tip-def" id="tip-en"></div></div>
+    <div class="tip-row"><span class="tip-lang">中</span><div class="tip-def zh" id="tip-zh"></div></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  CONFIG — Gemini API key built-in
+// ══════════════════════════════════════════
+const GEMINI_KEY = 'AIzaSyAnzc-yub7oCUHIWmATq54F6fYT1NDzV-0';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let passages=[], notebook=[];
+let cur=null, wmap={};
+
+function save(){try{localStorage.setItem('aier_v3',JSON.stringify({passages,notebook}));}catch(e){}}
+function load(){
+  try{const d=JSON.parse(localStorage.getItem('aier_v3')||'{}');passages=d.passages||[];notebook=d.notebook||[];}
+  catch(e){passages=[];notebook=[];}
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+let lastScreen='home';
+function go(name){
+  if(lastScreen!=='listen') stopTTS();
+  lastScreen=name;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('s-'+name);
+  if(el) el.classList.add('active');
+  if(name==='home') renderHome();
+  if(name==='notebook') renderNB();
+  if(name==='listen') setupListen();
+  if(name==='settings'){
+    document.getElementById('data-count').textContent=`${passages.length} 段落 / ${notebook.length} 词`;
+  }
+}
+
+// ══════════════════════════════════════════
+//  HOME
+// ══════════════════════════════════════════
+function renderHome(){
+  document.getElementById('home-pills').innerHTML=
+    `<span class="pill" onclick="go('import')">＋ 导入段落</span>
+     <span class="pill" onclick="go('notebook')">📖 生词本${notebook.length?' ('+notebook.length+')':''}</span>
+     <span class="pill" onclick="go('settings')">⚙ 设置</span>`;
+  const el=document.getElementById('home-list');
+  if(!passages.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">📄</div><div class="empty-title">还没有段落</div><div class="empty-hint">点击上方「导入段落」<br>粘贴你的第一段 AI 英文内容</div></div>`;
+    return;
+  }
+  el.innerHTML=[...passages].reverse().map(p=>`
+    <div class="card passage-card" onclick="openPassage('${p.id}')">
+      <div class="pc-title">${esc(p.title||'无标题')}</div>
+      <div class="pc-preview">${esc(p.text)}</div>
+      <div class="pc-meta">
+        <span class="badge badge-blue">${(p.words||[]).length} 词汇</span>
+        <span class="badge badge-amber">${fmtDate(p.createdAt)}</span>
+        ${p.mastered?'<span class="badge badge-green">✓ 已练习</span>':''}
+      </div>
+    </div>`).join('');
+}
+
+function openPassage(id){
+  cur=passages.find(p=>p.id===id);
+  if(!cur) return;
+  wmap={};
+  (cur.words||[]).forEach(w=>{wmap[w.word.toLowerCase()]=w;});
+  document.getElementById('read-title').textContent=cur.title||'原文';
+  document.getElementById('read-meta').textContent=(cur.words||[]).length+' 词';
+  document.getElementById('read-text').textContent=cur.text;
+  go('read');
+}
+
+function clearAll(){
+  if(!confirm('确定清空所有段落和生词本吗？不可撤销。')) return;
+  passages=[];notebook=[];save();go('home');
+}
+
+// ══════════════════════════════════════════
+//  IMPORT
+// ══════════════════════════════════════════
+async function doImport(){
+  const title=document.getElementById('imp-title').value.trim();
+  const text=document.getElementById('imp-text').value.trim();
+  if(!text){alert('请先粘贴英文内容');return;}
+  const btn=document.getElementById('imp-btn');
+  const box=document.getElementById('imp-loading');
+  btn.disabled=true; box.style.display='block';
+  try{
+    const words=await analyzeVocab(text);
+    const id=Date.now().toString();
+    const p={id,title:title||text.slice(0,36)+'…',text,words,createdAt:Date.now()};
+    passages.push(p); save();
+    document.getElementById('imp-title').value='';
+    document.getElementById('imp-text').value='';
+    cur=p; wmap={};
+    words.forEach(w=>{wmap[w.word.toLowerCase()]=w;});
+    document.getElementById('read-title').textContent=p.title;
+    document.getElementById('read-meta').textContent=words.length+' 词';
+    document.getElementById('read-text').textContent=text;
+    go('read');
+  }catch(e){
+    alert('分析失败：'+e.message+'\n\n请检查网络后重试。');
+  }finally{
+    btn.disabled=false; box.style.display='none';
+  }
+}
+
+// ══════════════════════════════════════════
+//  GEMINI API
+// ══════════════════════════════════════════
+async function analyzeVocab(text){
+  const prompt=`Identify vocabulary in this English text that a Chinese speaker learning to teach AI courses in English might not know well.
+
+Return ONLY a raw JSON array (no markdown, no backticks, no explanation):
+[{"word":"exact word or phrase from text","ipa":"/phonetic/","en":"clear 1-sentence definition","zh":"中文意思（2-5字）"}]
+
+Rules:
+- Max 15 items
+- Skip trivial words: the, a, is, are, was, will, can, this, for, with, that, have, be, I, we, as, of, to, in, etc.
+- Include: AI/ML terms, technical jargon, academic verbs, compound nouns, domain-specific phrases
+- IPA: standard phonemic transcription
+- Prefer meaningful phrases over isolated common words
+
+Text:
+"""${text}"""`;
+
+  const res=await fetch(GEMINI_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      contents:[{parts:[{text:prompt}]}],
+      generationConfig:{temperature:0.1,maxOutputTokens:1024}
+    })
+  });
+  if(!res.ok){
+    let msg=`HTTP ${res.status}`;
+    try{const e=await res.json();msg=e.error?.message||msg;}catch(x){}
+    throw new Error(msg);
+  }
+  const data=await res.json();
+  const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'[]';
+  const clean=raw.replace(/^```[a-z]*\s*/,'').replace(/\s*```$/,'').trim();
+  try{return JSON.parse(clean);}
+  catch{const m=clean.match(/\[[\s\S]*\]/);return m?JSON.parse(m[0]):[];}
+}
+
+// ══════════════════════════════════════════
+//  STUDY MODE
+// ══════════════════════════════════════════
+function goStudy(){
+  if(!cur) return;
+  document.getElementById('study-text').innerHTML=annotate(cur.text,cur.words||[]);
+  go('study');
+}
+
+function annotate(text,words){
+  if(!words.length) return esc(text);
+  const sorted=[...words].sort((a,b)=>b.word.length-a.word.length);
+  const segs=[];
+  const lo=text.toLowerCase();
+  sorted.forEach(w=>{
+    const lw=w.word.toLowerCase();
+    let i=0;
+    while(true){
+      const p=lo.indexOf(lw,i);
+      if(p===-1) break;
+      const pre=p===0||/\W/.test(text[p-1]);
+      const post=(p+lw.length)>=text.length||/\W/.test(text[p+lw.length]);
+      if(pre&&post){
+        const overlaps=segs.some(s=>p<s.e&&(p+lw.length)>s.s);
+        if(!overlaps) segs.push({s:p,e:p+lw.length,key:w.word.toLowerCase()});
+      }
+      i=p+1;
+    }
+  });
+  segs.sort((a,b)=>a.s-b.s);
+  let out='',pos=0;
+  segs.forEach(seg=>{
+    if(seg.s>pos) out+=esc(text.slice(pos,seg.s));
+    out+=`<span class="vocab-word" onclick="showTip('${escAttr(seg.key)}')">${esc(text.slice(seg.s,seg.e))}</span>`;
+    pos=seg.e;
+  });
+  if(pos<text.length) out+=esc(text.slice(pos));
+  return out;
+}
+
+function showTip(key){
+  const w=wmap[key]; if(!w) return;
+  document.getElementById('tip-word').textContent=w.word;
+  document.getElementById('tip-ipa').textContent=w.ipa||'';
+  document.getElementById('tip-en').textContent=w.en||'';
+  document.getElementById('tip-zh').textContent=w.zh||'';
+  document.getElementById('tip-overlay').classList.add('show');
+}
+function closeTip(e){if(e.target.id==='tip-overlay') closeTipDirect();}
+function closeTipDirect(){document.getElementById('tip-overlay').classList.remove('show');}
+
+// ══════════════════════════════════════════
+//  LISTEN: TTS + RECORD
+// ══════════════════════════════════════════
+let spd=1.0, mr=null, rChunks=[], rBlob=null, rUrl=null;
+
+function setupListen(){
+  if(!cur) return;
+  document.getElementById('listen-text').textContent=cur.text;
+  const btn=document.getElementById('play-btn');
+  btn.textContent='▶'; btn.classList.remove('playing');
+  document.getElementById('play-status').textContent='点击播放';
+}
+function togglePlay(){speechSynthesis.speaking?stopTTS():startTTS();}
+function startTTS(){
+  if(!cur) return;
+  stopTTS();
+  const u=new SpeechSynthesisUtterance(cur.text);
+  u.lang='en-US'; u.rate=spd;
+  u.onstart=()=>{
+    const b=document.getElementById('play-btn');
+    if(b){b.textContent='⏸';b.classList.add('playing');}
+    const s=document.getElementById('play-status');
+    if(s) s.textContent='正在朗读…';
+  };
+  u.onend=u.onerror=()=>{
+    const b=document.getElementById('play-btn');
+    if(b){b.textContent='▶';b.classList.remove('playing');}
+    const s=document.getElementById('play-status');
+    if(s) s.textContent='点击重新播放';
+  };
+  speechSynthesis.speak(u);
+}
+function stopTTS(){
+  try{if(speechSynthesis.speaking||speechSynthesis.pending) speechSynthesis.cancel();}catch(e){}
+  const b=document.getElementById('play-btn');
+  if(b){b.textContent='▶';b.classList.remove('playing');}
+}
+function setSpd(s,el){
+  spd=s;
+  document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  if(speechSynthesis.speaking){stopTTS();startTTS();}
+}
+async function toggleRec(){
+  const btn=document.getElementById('rec-btn');
+  const status=document.getElementById('rec-status');
+  const pb=document.getElementById('pb-btn');
+  if(mr&&mr.state==='recording'){
+    mr.stop();
+    btn.classList.remove('on'); btn.textContent='🎙';
+    status.textContent='录音完成 ✓';
+  }else{
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      rChunks=[];
+      mr=new MediaRecorder(stream);
+      mr.ondataavailable=e=>{if(e.data.size>0) rChunks.push(e.data);};
+      mr.onstop=()=>{
+        rBlob=new Blob(rChunks,{type:'audio/webm'});
+        if(rUrl) URL.revokeObjectURL(rUrl);
+        rUrl=URL.createObjectURL(rBlob);
+        pb.style.display='inline-block';
+        stream.getTracks().forEach(t=>t.stop());
+      };
+      mr.start();
+      btn.classList.add('on'); btn.textContent='⏹';
+      status.textContent='录音中… 点击停止';
+      pb.style.display='none';
+    }catch(e){
+      alert('无法使用麦克风。请在 Safari「网站设置」中允许麦克风权限。');
+    }
+  }
+}
+function playRec(){if(rUrl) new Audio(rUrl).play();}
+
+// ══════════════════════════════════════════
+//  FLASHCARD
+// ══════════════════════════════════════════
+let fcQ=[],fcIdx=0,fcFlipped=false,fcRight=[],fcWrong=[],fcProgress={};
+
+function startFC(){
+  if(!cur||!cur.words||!cur.words.length){alert('该段落没有词汇，请先导入并分析');return;}
+  fcQ=[...cur.words]; fcIdx=0; fcFlipped=false; fcRight=[]; fcWrong=[]; fcProgress={};
+  fcQ.forEach(w=>{fcProgress[w.word]=0;});
+  document.getElementById('fc-main').style.display='flex';
+  document.getElementById('fc-sum-wrap').style.display='none';
+  go('flashcard');
+  renderFC();
+}
+function renderFC(){
+  if(fcIdx>=fcQ.length){showFCSummary();return;}
+  const w=fcQ[fcIdx];
+  document.getElementById('fc-fill').style.width=Math.min(100,Math.round(fcIdx/fcQ.length*100))+'%';
+  document.getElementById('fc-counter').textContent=`${fcIdx+1} / ${fcQ.length}`;
+  document.getElementById('fc-fw').textContent=w.word;
+  document.getElementById('fc-bw').textContent=w.word;
+  document.getElementById('fc-ipa').textContent=w.ipa||'';
+  document.getElementById('fc-en').textContent=w.en||'';
+  document.getElementById('fc-zh').textContent=w.zh||'';
+  fcFlipped=false;
+  document.getElementById('fc-card').classList.remove('flipped');
+  document.getElementById('fc-no').disabled=true;
+  document.getElementById('fc-yes').disabled=true;
+}
+function flipCard(){
+  if(fcIdx>=fcQ.length) return;
+  fcFlipped=!fcFlipped;
+  document.getElementById('fc-card').classList.toggle('flipped',fcFlipped);
+  if(fcFlipped){
+    document.getElementById('fc-no').disabled=false;
+    document.getElementById('fc-yes').disabled=false;
+  }
+}
+function fcAns(ok){
+  if(!fcFlipped) return;
+  const w=fcQ[fcIdx];
+  if(ok){
+    fcProgress[w.word]=(fcProgress[w.word]||0)+1;
+    if(fcProgress[w.word]>=2) fcRight.push(w);
+    else fcQ.push(w);
+  }else{
+    if(!fcWrong.find(x=>x.word===w.word)){fcWrong.push(w);addToNB(w);}
+  }
+  fcIdx++; renderFC();
+}
+function showFCSummary(){
+  document.getElementById('fc-fill').style.width='100%';
+  document.getElementById('fc-main').style.display='none';
+  document.getElementById('fc-sum-wrap').style.display='flex';
+  const c=fcRight.length,w=fcWrong.length;
+  document.getElementById('fc-nc').textContent=c;
+  document.getElementById('fc-nw').textContent=w;
+  document.getElementById('fc-emoji').textContent=w===0?'🏆':c>w?'🎉':'💪';
+  document.getElementById('fc-sub').textContent=w>0
+    ?`${w} 个单词已加入生词本，下次继续巩固`:'全部掌握！继续保持！';
+  if(cur){cur.mastered=true;save();}
+}
+
+// ══════════════════════════════════════════
+//  NOTEBOOK
+// ══════════════════════════════════════════
+function addToNB(w){
+  if(!notebook.find(n=>n.word.toLowerCase()===w.word.toLowerCase())){
+    notebook.push({word:w.word,ipa:w.ipa||'',en:w.en||'',zh:w.zh||'',addedAt:Date.now()});
+    save();
+  }
+}
+function renderNB(){
+  const q=(document.getElementById('nb-q')?.value||'').toLowerCase().trim();
+  const list=notebook.filter(w=>!q||w.word.toLowerCase().includes(q)||(w.zh||'').includes(q));
+  document.getElementById('nb-count').textContent=list.length+' 个词';
+  const el=document.getElementById('nb-list');
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">📖</div><div class="empty-title">${q?'没找到':'生词本是空的'}</div><div class="empty-hint">${q?'试试其他关键词':'完成 Flashcard 后，答错的词会自动加入'}</div></div>`;
+    return;
+  }
+  el.innerHTML=list.map(w=>{
+    const idx=notebook.indexOf(w);
+    return `<div class="card nb-row">
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:600;margin-bottom:2px">${esc(w.word)}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber)">${esc(w.ipa)}</div>
+        <div style="font-size:14px;color:var(--text2);margin-top:3px">${esc(w.zh)}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">${esc(w.en)}</div>
+      </div>
+      <button class="nb-del" onclick="delNB(${idx})">✕</button>
+    </div>`;
+  }).join('');
+}
+function delNB(idx){notebook.splice(idx,1);save();renderNB();}
+
+// ══════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+function fmtDate(ts){if(!ts) return '';const d=new Date(ts);return `${d.getMonth()+1}月${d.getDate()}日`;}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+load();
+renderHome();
+</script>
+</body>
+</html>
