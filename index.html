@@ -366,10 +366,10 @@ textarea.form-input{min-height:200px;line-height:1.6}
 
 <script>
 // ══════════════════════════════════════════
-//  CONFIG — Gemini API key built-in
+//  CONFIG — Kimi 2.5 API
 // ══════════════════════════════════════════
-const GEMINI_KEY = 'AIzaSyBBIvlm8cl68kRrRPVGepoYynxBesrrs8s';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
+const KIMI_KEY = 'sk-sB4QF7680uBP3nIK8Pfm0QQcm0hdhGDL3s2C5LcDu7JVXEgu';
+const KIMI_URL = 'https://api.moonshot.cn/v1/chat/completions';
 
 // ══════════════════════════════════════════
 //  STATE
@@ -473,7 +473,7 @@ async function doImport(){
 }
 
 // ══════════════════════════════════════════
-//  GEMINI API
+//  KIMI API
 // ══════════════════════════════════════════
 async function analyzeVocab(text){
   const prompt=`Identify vocabulary in this English text that a Chinese speaker learning to teach AI courses in English might not know well.
@@ -491,12 +491,13 @@ Rules:
 Text:
 """${text}"""`;
 
-  const res=await fetch(GEMINI_URL,{
+  const res=await fetch(KIMI_URL,{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${KIMI_KEY}`},
     body:JSON.stringify({
-      contents:[{parts:[{text:prompt}]}],
-      generationConfig:{temperature:0.1,maxOutputTokens:1024}
+      model:'kimi-2.5',
+      messages:[{role:'user',content:prompt}],
+      temperature:0.1,max_tokens:1024
     })
   });
   if(!res.ok){
@@ -505,7 +506,7 @@ Text:
     throw new Error(msg);
   }
   const data=await res.json();
-  const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'[]';
+  const raw=data.choices?.[0]?.message?.content||'[]';
   const clean=raw.replace(/^```[a-z]*\s*/,'').replace(/\s*```$/,'').trim();
   try{return JSON.parse(clean);}
   catch{const m=clean.match(/\[[\s\S]*\]/);return m?JSON.parse(m[0]):[];}
