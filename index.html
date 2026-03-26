@@ -366,10 +366,10 @@ textarea.form-input{min-height:200px;line-height:1.6}
 
 <script>
 // ══════════════════════════════════════════
-//  CONFIG — Kimi 2.5 API
+//  CONFIG — Anthropic Claude API
 // ══════════════════════════════════════════
-const KIMI_KEY = 'sk-sB4QF7680uBP3nIK8Pfm0QQcm0hdhGDL3s2C5LcDu7JVXEgu';
-const KIMI_URL = 'https://api.moonshot.cn/v1/chat/completions';
+const CLAUDE_KEY = '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';
+const CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
 
 // ══════════════════════════════════════════
 //  STATE
@@ -491,13 +491,13 @@ Rules:
 Text:
 """${text}"""`;
 
-  const res=await fetch(KIMI_URL,{
+  const res=await fetch(CLAUDE_URL,{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':`Bearer ${KIMI_KEY}`},
+    headers:{'Content-Type':'application/json','x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
     body:JSON.stringify({
-      model:'kimi-k2.5',
+      model:'claude-haiku-4-5-20251001',
       messages:[{role:'user',content:prompt}],
-      temperature:1,max_tokens:1024
+      max_tokens:1024
     })
   });
   if(!res.ok){
@@ -506,7 +506,7 @@ Text:
     throw new Error(msg);
   }
   const data=await res.json();
-  const raw=data.choices?.[0]?.message?.content||'[]';
+  const raw=data.content?.[0]?.text||'[]';
   const clean=raw.replace(/^```[a-z]*\s*/,'').replace(/\s*```$/,'').trim();
   try{return JSON.parse(clean);}
   catch{const m=clean.match(/\[[\s\S]*\]/);return m?JSON.parse(m[0]):[];}
